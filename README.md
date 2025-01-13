@@ -45,7 +45,10 @@ Install AuroraDB from NPM:
 ```javascript
 npm install aurora-db
 ```
-
+You can then import it like this:
+```javascript
+import AuroraDB from 'aurora-db'
+```
 Or use it from a CDN:
 ```javascript
 <script src="https://cdn.jsdelivr.net/npm/aurora-db"></script>
