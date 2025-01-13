@@ -7,7 +7,7 @@
 <dd></dd>
 <dt><a href="#IDBStore">IDBStore</a> ⇐ <code><a href="#IDB">IDB</a></code></dt>
 <dd></dd>
-<dt><a href="#IDBStore">IDBStore</a> ⇐ <code><a href="#IDB">IDB</a></code></dt>
+<dt><a href="#IDBStore">PeerStore</a> ⇐ <code><a href="#IDB">IDBStore</a></code></dt>
 <dd></dd>
 </dl>
 
