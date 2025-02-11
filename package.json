@@ -4,13 +4,13 @@
   "type": "module",
   "description": "Proxified asynchronous API for distributed IndexedDB. Create local or distributed database in the browser for multiplayer games, collaborative software or for the fun of it!",
   "main": "auroradb.js",
-  "homepage": "https://github.com/omodaka9375/aurora-db",
+  "homepage": "https://github.com/Omodaka9375/aurora-db",
   "scripts": {
     "build": "rollup -c && uglifyjs dist/auroradb.js -o dist/auroradb.min.js --compress --no-annotations --mangle"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/omodaka9375/aurora-db"
+    "url": "git+https://github.com/Omodaka9375/aurora-db.git"
   },
   "keywords": [
     "proxy",
