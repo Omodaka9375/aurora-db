@@ -15,8 +15,6 @@ Create a regular or distributed database in the browser for p2p applications, mu
 
 😇 Elegant Async/Await API:
  ```javascript
- await db.create()        // Create offline DB 
- await db.create(true)    // Create distributed DB 
  await db.add(key, data)  // Add record
  await db.get(key)        // Get record
  await db.remove(key)     // Remove record
@@ -32,10 +30,10 @@ Create a regular or distributed database in the browser for p2p applications, mu
  ```
 🚀 Distributed with a flip of a bool:
  ```javascript
-  await db.create(true) 
+  distributed: true // in db scheme
  ```
-- Encryption, chunking and connection handled by NetAdapter for PeerJS
-- Minimal footprint, only 93kB
+- Encryption, chunking and connection handled by PeerJS
+- Minimal footprint
 - Written in pure JavaScript, requiring no external libraries or frameworks
 
 ## Installation
@@ -45,10 +43,7 @@ Install AuroraDB from NPM:
 ```javascript
 npm install aurora-db
 ```
-You can then import it like this:
-```javascript
-import AuroraDB from 'aurora-db'
-```
+
 Or use it from a CDN:
 ```javascript
 <script src="https://cdn.jsdelivr.net/npm/aurora-db"></script>
@@ -56,17 +51,16 @@ Or use it from a CDN:
 
 ## Usage/Examples
 
-Create a scheme for your DB:
+Create an scheme for your DB:
 ```javascript
 const exampleScheme = {
-    name: '#YourUniqueAppId',         // make your app name unique
-    version: 1,
+    name: '#YourUniqueAppId',         // make your app name unique this wil be your unique channel name
     server: { host: '<server-url>' }, // peerjs-server config
+    distributed: false,               // local or distributed deafult false
     keyPath: 'id',
     autoIncrement: false,
     indexes: [
-        {name: "id", unique: true},
-        {name: "name"}
+        {name: "id", unique: true}, {name: "name"}
     ]
 }
 ```
@@ -75,11 +69,6 @@ Instantiate AuroraDB and pass the scheme to the constructor:
 
 ```javascript
 const db = new AuroraDB(exampleScheme)
-```
-
-Create a local DB with AuroraDB:
-```javascript
-await db.create()
 ```
 
 Add to DB:
@@ -115,15 +104,6 @@ Control transactions if necessary
 await db.transaction(db => { db.entries['foo'] = {name: 'foo'}; db.entries['bar'] = {name: 'bar'}})
 ```
 
-
-Create a distributed DB with AuroraDB:
-```javascript
-await db.create(true)
-```
-Optionally, with custom peerId:
-```javascript
-await db.create(true, 'my-custom-peer-id') // usefull for persistant id accross sessions
-```
 Add some data to our DB:
 ```javascript
 await db.add("Player1",  9) // eg. adding a score for leaderboard
@@ -132,6 +112,19 @@ await db.add("Player1",  9) // eg. adding a score for leaderboard
 Send our data to everyone:
 ```javascript
 await db.post()
+```
+Get data from everyone:
+```javascript
+await db.fetch()
+```
+
+Subscribe to events:
+```javascript
+db.addEventListener("connection") // new peer joined
+db.addEventListener("close")      // peer closed connection
+db.addEventListener("change")     // local DB updated - can call post() after this
+db.addEventListener("post")       // listen for DB requests
+db.addEventListener("disconnect") // listen for DB requests
 ```
 Get data from everyone:
 ```javascript
