@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/omodaka9375/aurora-db.git"
+    "url": "https://github.com/omodaka9375/aurora-db"
   },
   "keywords": [
     "proxy",
