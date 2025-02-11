@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="application/javascript" src="./auroradb.min.js"></script>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/aurora-db"></script>
     <title>AuroraDB</title>
 </head>
 <body>
@@ -12,8 +12,8 @@
         window.addEventListener("load", function() {
         const exampleScheme = {
             name: '#YourUniqueAppId',
-            version: 1,
-            server: { host:'<peerjs-server-url>' },
+            distributed: false,                      // optional if false
+            server: { host:'<peerjs-server-url>' },  //optional if not used
             keyPath: 'id',
             autoIncrement: false,
             indexes: [

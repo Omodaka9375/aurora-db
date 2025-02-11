@@ -1,16 +1,17 @@
 import { IDBStore, PeerStore } from "./src/idb"
 
 class AuroraDB {
-    /**
-    * AuroraDB
-    * @param {Object} scheme SchemeObjects
-    * @example new AuroraDB(scheme)
-    */
-    constructor(scheme) {
-        this.db
-        this.scheme = scheme
-        this.connected = false
-        window.auroradb = this
+      /**
+      * AuroraDB
+      * @param {Object} scheme SchemeObjects
+      * @example new AuroraDB(scheme)
+      */
+      constructor(scheme) {
+        this.db;
+        this.scheme = scheme;
+        this.connected = false;
+        window.auroradb = this;
+        this.create(this.scheme.distributed)
     }
     /**
      * Create new or load DB with scheme
@@ -21,20 +22,21 @@ class AuroraDB {
      */
     create = async (distributed = false, id = '') => {
         if (distributed) {
-            const peerdb = new PeerStore(this.scheme,id)
+            const peerdb = new PeerStore(this.scheme,id);
             peerdb.net.channel(this.scheme.name, {
                 async get(_, answer) {                    // Someone asks for DB
-                    answer('post', (await peerdb.all())) // Send ours back
+                    answer('post', (await peerdb.all())); // Send ours back
                 },
                 async post(data) {       // Someone sent a DB
-                    console.log(data)
-                    peerdb.concat(data) // Combine the sent data with our DB
+                    const onpost = new CustomEvent("post", {detail: data});
+                    peerdb.dispatchEvent(onpost)
+                    peerdb.concat(data); // Combine the sent data with our DB
                 }
-            })
-            this.db = peerdb
-            this.connected = true
+            });
+            this.db = peerdb;
+            this.connected = true;
         } else {
-            this.db = new IDBStore(this.scheme)
+            this.db = new IDBStore(this.scheme);
         }
     }
     /**
@@ -60,7 +62,7 @@ class AuroraDB {
      * @example await db.add(0,"Player1")
      */
     add = async (key, data) => {
-        this.db.entries[key] = { name: data }
+        this.db.entries[key] = { name: data };
     }
     /**
      * Get from DB
@@ -76,7 +78,7 @@ class AuroraDB {
      * @example await db.remove(0)
      */
     remove = async (key) => {
-       delete this.db.entries[key]
+       delete this.db.entries[key];
     }
     /**
      * Filter DB and return new Array of results.
@@ -128,11 +130,11 @@ class AuroraDB {
      */
     post = async () => {
         if (!this.connected) {
-            console.error("Error syncing. Not connected.")
+            console.error("Error syncing. Not connected.");
             return
         }
-        const entries = await this.db.all()
-        await this.db.net.broadcast(this.scheme.name, 'post', entries)
+        const entries = await this.db.all();
+        await this.db.net.broadcast(this.scheme.name, 'post', entries);
     }
     /**
      * 
@@ -141,10 +143,10 @@ class AuroraDB {
      */
     fetch = async () => {
         if (!this.connected) {
-            console.error("Error fetching. Not connected.")
+            console.error("Error fetching. Not connected.");
             return
         }
-        await this.db.net.broadcast(this.scheme.name, 'get')
+        await this.db.net.broadcast(this.scheme.name, 'get');
     }
 
 }
