@@ -1,6 +1,6 @@
 {
   "name": "aurora-db",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "type": "module",
   "description": "Proxified asynchronous API for distributed IndexedDB. Create local or distributed database in the browser for multiplayer games, collaborative software or for the fun of it!",
   "main": "auroradb.js",
