@@ -1,12 +1,13 @@
 {
   "name": "aurora-db",
-  "version": "0.0.2",
+  "version": "2.1.0",
   "type": "module",
   "description": "Proxified asynchronous API for distributed IndexedDB. Create local or distributed database in the browser for multiplayer games, collaborative software or for the fun of it!",
-  "main": "auroradb.js",
+  "main": "auroradb.min.js",
+  "browser": "auroradb.min.js",
   "homepage": "https://github.com/Omodaka9375/aurora-db",
   "scripts": {
-    "build": "rollup -c && uglifyjs dist/auroradb.js -o dist/auroradb.min.js --compress --no-annotations --mangle"
+      "test": "echo \"Tests will be added in future versions\" && exit 0"
   },
   "repository": {
     "type": "git",
@@ -24,14 +25,20 @@
   ],
   "files": [
     "auroradb.js",
+    "auroradb.min.js",
     "README.md",
     "LICENSE"
   ],
-  "author": "Branislav Đalić",
+    "author": {
+      "name": "Branislav Djalic",
+      "email": "branislav.djalic@gmail.com"
+    },
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
     "rollup": "^4.30.1",
     "uglify-js": "^3.19.3"
-  }
+  },
+    "jsdelivr": "auroradb.min.js",
+    "unpkg": "auroradb.min.js"
 }

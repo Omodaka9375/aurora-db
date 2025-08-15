@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuroraDB - Distributed P2P Database Showcase</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="auroradb.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #4facfe;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --error-color: #f72585;
+            --dark-bg: #1a1d29;
+            --card-bg: #252836;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a3bd;
+            --border-color: #3b3f5c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #2d1b69 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 60px 0 40px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="0.5" fill="white" opacity="0.2"/><circle cx="40" cy="80" r="1.5" fill="white" opacity="0.1"/></svg>') repeat;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .header .tagline {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+        }
+
+        .header .features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            font-size: 1rem;
+            opacity: 0.8;
+            position: relative;
+        }
+
+        .header .features span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.1);
+        }
+
+        .status-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Demo Sections */
+        .demo-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--dark-bg);
+        }
+
+        .btn-error {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Data Display */
+        .data-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .data-item {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .data-item:hover {
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .data-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .data-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-item-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .data-item-content {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .data-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Code Display */
+        .code-block {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .code-block .language-label {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+        }
+
+        /* Activity Log */
+        .activity-log {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .log-item.success {
+            border-left-color: var(--success-color);
+            background: rgba(6, 214, 160, 0.05);
+        }
+
+        .log-item.error {
+            border-left-color: var(--error-color);
+            background: rgba(247, 37, 133, 0.05);
+        }
+
+        .log-item.warning {
+            border-left-color: var(--warning-color);
+            background: rgba(255, 209, 102, 0.05);
+        }
+
+        .log-timestamp {
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        /* Statistics Charts */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-chart {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chart-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .chart-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .chart-bar {
+            background: var(--border-color);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .chart-fill {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* Use Cases */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .use-case {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .use-case:hover {
+            transform: translateY(-10px);
+        }
+
+        .use-case-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .use-case-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .use-case-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header .features {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+            color: var(--dark-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌅 AuroraDB</h1>
+            <div class="tagline">Distributed P2P Database for the Modern Web</div>
+            <div class="features">
+                <span>🗄️ IndexedDB Backend</span>
+                <span>🔄 Real-time Sync</span>
+                <span>🔌 Pluggable Adapters</span>
+                <span>⚡ High Performance</span>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-value" id="peer-id-display">Connecting...</div>
+                <div class="status-label">Peer ID</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="connections-count">0</div>
+                <div class="status-label">Connected Peers</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="records-count">0</div>
+                <div class="status-label">Total Records</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="sync-count">0</div>
+                <div class="status-label">Sync Events</div>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="demo-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">🚀 Interactive Demo</h2>
+                    <div class="section-subtitle">Experience real-time P2P database synchronization</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="generateSampleData()">📊 Generate Data</button>
+                    <button class="btn btn-warning" onclick="clearAllData()">🧹 Clear All</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('crud')">📝 CRUD Operations</button>
+                <button class="tab" onclick="switchTab('collaboration')">👥 Collaboration</button>
+                <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+                <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+            </div>
+
+            <!-- CRUD Operations Tab -->
+            <div id="crud-tab" class="tab-content active">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>👤 User Management</label>
+                        <input type="text" id="user-name" placeholder="Full Name">
+                        <input type="email" id="user-email" placeholder="Email Address">
+                        <input type="number" id="user-age" placeholder="Age" min="1" max="120">
+                        <input type="text" id="user-role" placeholder="Role (e.g., Developer, Designer)">
+                        <button class="btn btn-primary" onclick="addUser()">➕ Add User</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📋 Task Management</label>
+                        <input type="text" id="task-title" placeholder="Task Title">
+                        <textarea id="task-description" placeholder="Task Description" rows="3"></textarea>
+                        <select id="task-priority">
+                            <option value="low">🟢 Low Priority</option>
+                            <option value="medium">🟡 Medium Priority</option>
+                            <option value="high">🔴 High Priority</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="addTask()">➕ Add Task</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🏷️ Tag Management</label>
+                        <input type="text" id="tag-name" placeholder="Tag Name">
+                        <input type="color" id="tag-color" value="#667eea">
+                        <textarea id="tag-description" placeholder="Tag Description" rows="2"></textarea>
+                        <button class="btn btn-primary" onclick="addTag()">➕ Add Tag</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collaboration Tab -->
+            <div id="collaboration-tab" class="tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>💬 Real-time Chat</label>
+                        <div class="activity-log" id="chat-messages" style="height: 200px;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="chat-input" placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                            <button class="btn btn-primary" onclick="sendMessage()">📤 Send</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📊 Collaborative Voting</label>
+                        <input type="text" id="poll-question" placeholder="Poll Question">
+                        <input type="text" id="poll-option1" placeholder="Option 1">
+                        <input type="text" id="poll-option2" placeholder="Option 2">
+                        <button class="btn btn-primary" onclick="createPoll()">🗳️ Create Poll</button>
+                        <div id="active-polls"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-chart">
+                        <div class="chart-value" id="users-stat">0</div>
+                        <div class="chart-label">Total Users</div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" id="users-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-chart">
+                        <div class="chart-value" id="tasks-stat">0</div>
+                        <div class="chart-label">Active Tasks</div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" id="tasks-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-chart">
+                        <div class="chart-value" id="messages-stat">0</div>
+                        <div class="chart-label">Messages Sent</div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" id="messages-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-chart">
+                        <div class="chart-value" id="sync-stat">0</div>
+                        <div class="chart-label">Sync Operations</div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" id="sync-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>📈 Real-time Activity</h3>
+                    <canvas id="activity-chart" width="800" height="300" style="max-width: 100%; border: 1px solid var(--border-color); border-radius: 10px; background: var(--dark-bg);"></canvas>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>🔌 P2P Adapter</label>
+                        <select id="p2p-adapter" onchange="updateAdapterInfo()">
+                            <option value="peerjs">PeerJS (Default)</option>
+                            <option value="webrtc">WebRTC (Custom)</option>
+                            <option value="socketio">Socket.IO</option>
+                        </select>
+                        <div id="adapter-info" class="code-block"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>⚙️ Database Configuration</label>
+                        <input type="number" id="sync-interval" value="15000" min="1000" max="300000" step="1000">
+                        <label for="sync-interval">Sync Interval (ms)</label>
+                        
+                        <select id="conflict-resolution">
+                            <option value="timestamp">Timestamp (Latest Wins)</option>
+                            <option value="version">Version (Higher Wins)</option>
+                            <option value="merge">Merge Strategy</option>
+                            <option value="local-wins">Local Wins</option>
+                            <option value="remote-wins">Remote Wins</option>
+                        </select>
+                        <label for="conflict-resolution">Conflict Resolution</label>
+
+                        <button class="btn btn-secondary" onclick="applySettings()">💾 Apply Settings</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔧 Database Actions</label>
+                        <button class="btn btn-primary" onclick="manualSync()">🔄 Manual Sync</button>
+                        <button class="btn btn-secondary" onclick="exportDatabase()">📦 Export Data</button>
+                        <button class="btn btn-secondary" onclick="importDatabase()">📥 Import Data</button>
+                        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="processImport()">
+                        <button class="btn btn-warning" onclick="reconnectDatabase()">🔌 Reconnect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Display -->
+        <div class="demo-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">📊 Live Data</h2>
+                    <div class="section-subtitle">Real-time view of synchronized data across peers</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
+                    <button class="btn btn-secondary" onclick="filterData()">🔍 Filter</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchDataTab('users')">👥 Users (<span id="users-count">0</span>)</button>
+                <button class="tab" onclick="switchDataTab('tasks')">📋 Tasks (<span id="tasks-count">0</span>)</button>
+                <button class="tab" onclick="switchDataTab('tags')">🏷️ Tags (<span id="tags-count">0</span>)</button>
+                <button class="tab" onclick="switchDataTab('messages')">💬 Messages (<span id="messages-count">0</span>)</button>
+            </div>
+
+            <div id="users-data" class="tab-content active">
+                <div class="data-grid" id="users-list"></div>
+            </div>
+
+            <div id="tasks-data" class="tab-content">
+                <div class="data-grid" id="tasks-list"></div>
+            </div>
+
+            <div id="tags-data" class="tab-content">
+                <div class="data-grid" id="tags-list"></div>
+            </div>
+
+            <div id="messages-data" class="tab-content">
+                <div class="data-grid" id="messages-list"></div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="demo-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">🎯 Use Cases</h2>
+                    <div class="section-subtitle">Discover what you can build with AuroraDB</div>
+                </div>
+            </div>
+
+            <div class="use-cases">
+                <div class="use-case">
+                    <div class="use-case-icon">📝</div>
+                    <div class="use-case-title">Collaborative Editors</div>
+                    <div class="use-case-description">Build real-time document editors, whiteboards, and design tools with automatic conflict resolution and version control.</div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-icon">🎮</div>
+                    <div class="use-case-title">Multiplayer Games</div>
+                    <div class="use-case-description">Create multiplayer games with shared state, real-time synchronization, and offline-first gameplay mechanics.</div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-icon">💬</div>
+                    <div class="use-case-title">Chat Applications</div>
+                    <div class="use-case-description">Develop decentralized chat apps with message history, file sharing, and cross-device synchronization.</div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-icon">📊</div>
+                    <div class="use-case-title">IoT Dashboards</div>
+                    <div class="use-case-description">Build IoT monitoring dashboards with real-time sensor data sharing and distributed analytics.</div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-icon">🛒</div>
+                    <div class="use-case-title">Offline Commerce</div>
+                    <div class="use-case-description">Create e-commerce applications that work offline and sync inventory and orders when connectivity is restored.</div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-icon">📋</div>
+                    <div class="use-case-title">Form Applications</div>
+                    <div class="use-case-description">Build data collection apps with offline support and automatic synchronization for field work and surveys.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="demo-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">📝 Activity Log</h2>
+                    <div class="section-subtitle">Real-time system events and user actions</div>
+                </div>
+                <button class="btn btn-secondary" onclick="clearActivityLog()">🧹 Clear Log</button>
+            </div>
+            <div class="activity-log" id="activity-log"></div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="demo-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">💻 Code Examples</h2>
+                    <div class="section-subtitle">Learn how to integrate AuroraDB into your projects</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchCodeTab('basic')">🚀 Quick Start</button>
+                <button class="tab" onclick="switchCodeTab('distributed')">🌐 Distributed</button>
+                <button class="tab" onclick="switchCodeTab('advanced')">⚡ Advanced</button>
+                <button class="tab" onclick="switchCodeTab('adapters')">🔌 Adapters</button>
+            </div>
+
+            <div id="basic-code" class="tab-content active">
+                <div class="code-block">
+                    <div class="language-label">JavaScript</div>
+                    <pre>// Create a local database
+const db = new AuroraDB({
+    name: 'myapp',
+    version: 1,
+    keyPath: 'id'
+});
+
+// Initialize database
+await db.create();
+
+// Add data
+await db.add('user1', {
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    role: 'Developer'
+});
+
+// Query data
+const users = await db.filter(user => 
+    user.role === 'Developer'
+);
+
+// Get all data
+const allUsers = await db.all();
+
+console.log('Found users:', users);</pre>
+                </div>
+            </div>
+
+            <div id="distributed-code" class="tab-content">
+                <div class="code-block">
+                    <div class="language-label">JavaScript</div>
+                    <pre>// Create distributed P2P database
+const db = new AuroraDB({
+    name: 'collaborative-app',
+    distributed: true,
+    autoSync: true,
+    syncInterval: 10000,
+    p2pAdapter: 'peerjs'
+});
+
+// Initialize with P2P sync
+await db.create();
+
+// Listen for sync events
+db.addEventListener('sync', (event) => {
+    console.log('Synced with peers:', event.detail);
+});
+
+// Listen for new peer connections
+db.addEventListener('connection', (event) => {
+    console.log('New peer connected:', event.detail.peerId);
+});
+
+// Add data - automatically syncs to peers
+await db.add('task1', {
+    title: 'Review code',
+    assignee: 'Bob',
+    priority: 'high',
+    createdAt: new Date().toISOString()
+});
+
+// Data is now synchronized across all connected peers!</pre>
+                </div>
+            </div>
+
+            <div id="advanced-code" class="tab-content">
+                <div class="code-block">
+                    <div class="language-label">JavaScript</div>
+                    <pre>// Advanced configuration with custom conflict resolution
+const db = new AuroraDB({
+    name: 'enterprise-app',
+    version: 2,
+    distributed: true,
+    syncStrategy: 'merge', // Custom conflict resolution
+    indexes: [
+        { name: 'email', unique: true },
+        { name: 'department', unique: false },
+        { name: 'createdAt', unique: false }
+    ]
+});
+
+// Batch operations for performance
+await db.transaction(async (db) => {
+    db.entries['user1'] = { name: 'Alice', dept: 'Engineering' };
+    db.entries['user2'] = { name: 'Bob', dept: 'Design' };
+    db.entries['user3'] = { name: 'Charlie', dept: 'Marketing' };
+});
+
+// Advanced querying
+const recentUsers = await db.filter(user => 
+    new Date(user.createdAt) > new Date('2024-01-01')
+);
+
+// Pagination
+const firstPage = await db.slice(0, 10);
+const secondPage = await db.slice(10, 20);
+
+// Complex analytics
+const stats = {
+    totalUsers: await db.count(),
+    departments: await db.filter(u => u.department)
+        .then(users => [...new Set(users.map(u => u.department))])
+};
+
+console.log('Database stats:', stats);</pre>
+                </div>
+            </div>
+
+            <div id="adapters-code" class="tab-content">
+                <div class="code-block">
+                    <div class="language-label">JavaScript</div>
+                    <pre>// Using different P2P adapters
+
+// 1. PeerJS (Default)
+const peerJSDB = new AuroraDB({
+    name: 'peerjs-app',
+    distributed: true,
+    p2pAdapter: 'peerjs',
+    server: {
+        host: 'localhost',
+        port: 9000,
+        path: '/myapp'
+    }
+});
+
+// 2. Custom WebRTC
+const webrtcDB = new AuroraDB({
+    name: 'webrtc-app',
+    distributed: true,
+    p2pAdapter: 'webrtc',
+    p2pConfig: {
+        signalingServer: 'wss://my-signaling.com',
+        rtcConfig: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        }
+    }
+});
+
+// 3. Socket.IO
+const socketDB = new AuroraDB({
+    name: 'socket-app',
+    distributed: true,
+    p2pAdapter: 'socketio',
+    p2pConfig: {
+        serverUrl: 'https://my-socket-server.com',
+        rooms: ['app-room']
+    }
+});
+
+// 4. Custom Adapter
+class MyCustomAdapter extends AuroraDB.P2PAdapter {
+    async connect() {
+        // Your custom connection logic
+        console.log('Connecting with custom adapter');
+    }
+    
+    send(peerId, data) {
+        // Your custom send logic
+        console.log('Sending data to', peerId);
+    }
+}
+
+// Register and use custom adapter
+AuroraDB.registerP2PAdapter('custom', MyCustomAdapter);
+
+const customDB = new AuroraDB({
+    name: 'custom-app',
+    distributed: true,
+    p2pAdapter: 'custom'
+});</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Global variables
+        let db;
+        let isConnected = false;
+        let stats = {
+            users: 0,
+            tasks: 0,
+            tags: 0,
+            messages: 0,
+            syncEvents: 0
+        };
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                logActivity('🚀 Initializing AuroraDB showcase...', 'info');
+
+                // Create distributed database
+                db = new AuroraDB({
+                    name: 'auroradb-showcase',
+                    version: 1,
+                    keyPath: 'id',
+                    distributed: true,
+                    autoSync: true,
+                    syncInterval: 15000,
+                    syncStrategy: 'timestamp'
+                });
+
+                // Setup event listeners
+                setupEventListeners();
+
+                // Initialize database
+                await db.create();
+
+                logActivity('✅ AuroraDB initialized successfully', 'success');
+
+            } catch (error) {
+                logActivity(`❌ Failed to initialize: ${error.message}`, 'error');
+                showNotification('Failed to initialize AuroraDB', 'error');
+            }
+        }
+
+        // Setup database event listeners
+        function setupEventListeners() {
+            db.addEventListener('open', (event) => {
+                isConnected = true;
+                const peerId = db.getPeerId();
+                document.getElementById('peer-id-display').textContent = peerId ? peerId.substring(0, 8) + '...' : 'Local';
+                logActivity(`🌐 Connected to P2P network (ID: ${peerId?.substring(0, 8)}...)`, 'success');
+                updateUI();
+            });
+
+            db.addEventListener('connection', (event) => {
+                logActivity(`🤝 New peer connected: ${event.detail.peerId?.substring(0, 8)}...`, 'info');
+                updateUI();
+            });
+
+            db.addEventListener('sync', (event) => {
+                stats.syncEvents++;
+                logActivity(`🔄 Synchronized with ${event.detail.sent || 0} peers`, 'info');
+                updateUI();
+            });
+
+            db.addEventListener('change', () => {
+                updateUI();
+            });
+
+            db.addEventListener('error', (event) => {
+                logActivity(`❌ Database error: ${event.detail.message}`, 'error');
+                showNotification('Database error occurred', 'error');
+            });
+
+            // Custom event for chat messages
+            db.addEventListener('post', (event) => {
+                if (event.detail && event.detail.data) {
+                    logActivity(`📥 Received ${event.detail.data.length} records from peer`, 'info');
+                }
+            });
+        }
+
+        // Tab switching functions
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        function switchDataTab(tabName) {
+            // Remove active class from all data tabs and contents
+            document.querySelectorAll('#data-display .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#data-display .tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            document.querySelector(`[onclick="switchDataTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-data`).classList.add('active');
+        }
+
+        function switchCodeTab(tabName) {
+            document.querySelectorAll('[id$="-code"]').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('[onclick^="switchCodeTab"]').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(`${tabName}-code`).classList.add('active');
+            document.querySelector(`[onclick="switchCodeTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // CRUD Operations
+        async function addUser() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            const name = document.getElementById('user-name').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const age = parseInt(document.getElementById('user-age').value);
+            const role = document.getElementById('user-role').value.trim();
+
+            if (!name || !email || !age || !role) {
+                showNotification('Please fill all user fields', 'warning');
+                return;
+            }
+
+            try {
+                const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                await db.add(userId, {
+                    type: 'user',
+                    name,
+                    email,
+                    age,
+                    role,
+                    createdAt: new Date().toISOString(),
+                    createdBy: db.getPeerId()?.substring(0, 8) || 'local'
+                });
+
+                // Clear form
+                document.getElementById('user-name').value = '';
+                document.getElementById('user-email').value = '';
+                document.getElementById('user-age').value = '';
+                document.getElementById('user-role').value = '';
+
+                stats.users++;
+                logActivity(`👤 Added user: ${name} (${role})`, 'success');
+                showNotification(`User ${name} added successfully`, 'success');
+                await updateUI();
+
+            } catch (error) {
+                logActivity(`❌ Failed to add user: ${error.message}`, 'error');
+                showNotification('Failed to add user', 'error');
+            }
+        }
+
+        async function addTask() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            const title = document.getElementById('task-title').value.trim();
+            const description = document.getElementById('task-description').value.trim();
+            const priority = document.getElementById('task-priority').value;
+
+            if (!title || !description) {
+                showNotification('Please fill task title and description', 'warning');
+                return;
+            }
+
+            try {
+                const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                await db.add(taskId, {
+                    type: 'task',
+                    title,
+                    description,
+                    priority,
+                    status: 'pending',
+                    createdAt: new Date().toISOString(),
+                    createdBy: db.getPeerId()?.substring(0, 8) || 'local'
+                });
+
+                // Clear form
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-description').value = '';
+
+                stats.tasks++;
+                logActivity(`📋 Added task: ${title} (${priority} priority)`, 'success');
+                showNotification(`Task "${title}" added successfully`, 'success');
+                await updateUI();
+
+            } catch (error) {
+                logActivity(`❌ Failed to add task: ${error.message}`, 'error');
+                showNotification('Failed to add task', 'error');
+            }
+        }
+
+        async function addTag() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            const name = document.getElementById('tag-name').value.trim();
+            const color = document.getElementById('tag-color').value;
+            const description = document.getElementById('tag-description').value.trim();
+
+            if (!name) {
+                showNotification('Please enter tag name', 'warning');
+                return;
+            }
+
+            try {
+                const tagId = `tag_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                await db.add(tagId, {
+                    type: 'tag',
+                    name,
+                    color,
+                    description,
+                    usageCount: 0,
+                    createdAt: new Date().toISOString(),
+                    createdBy: db.getPeerId()?.substring(0, 8) || 'local'
+                });
+
+                // Clear form
+                document.getElementById('tag-name').value = '';
+                document.getElementById('tag-description').value = '';
+
+                stats.tags++;
+                logActivity(`🏷️ Added tag: ${name}`, 'success');
+                showNotification(`Tag "${name}" added successfully`, 'success');
+                await updateUI();
+
+            } catch (error) {
+                logActivity(`❌ Failed to add tag: ${error.message}`, 'error');
+                showNotification('Failed to add tag', 'error');
+            }
+        }
+
+        // Chat functionality
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!message || !isConnected) {
+                showNotification('Cannot send message', 'warning');
+                return;
+            }
+
+            try {
+                const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                await db.add(messageId, {
+                    type: 'message',
+                    content: message,
+                    author: db.getPeerId()?.substring(0, 8) || 'Anonymous',
+                    timestamp: new Date().toISOString(),
+                    createdBy: db.getPeerId()?.substring(0, 8) || 'local'
+                });
+
+                input.value = '';
+                stats.messages++;
+                logActivity(`💬 Sent message: ${message.substring(0, 30)}${message.length > 30 ? '...' : ''}`, 'info');
+                await updateChatDisplay();
+
+            } catch (error) {
+                logActivity(`❌ Failed to send message: ${error.message}`, 'error');
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function updateChatDisplay() {
+            try {
+                const messages = await db.filter(item => item.type === 'message');
+                const sortedMessages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                
+                const chatContainer = document.getElementById('chat-messages');
+                chatContainer.innerHTML = sortedMessages.map(msg => `
+                    <div class="log-item">
+                        <span class="log-timestamp">[${new Date(msg.timestamp).toLocaleTimeString()}]</span>
+                        <strong>${msg.author}:</strong> ${msg.content}
+                    </div>
+                `).join('');
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Failed to update chat:', error);
+            }
+        }
+
+        // Polling functionality
+        async function createPoll() {
+            const question = document.getElementById('poll-question').value.trim();
+            const option1 = document.getElementById('poll-option1').value.trim();
+            const option2 = document.getElementById('poll-option2').value.trim();
+
+            if (!question || !option1 || !option2) {
+                showNotification('Please fill all poll fields', 'warning');
+                return;
+            }
+
+            try {
+                const pollId = `poll_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                await db.add(pollId, {
+                    type: 'poll',
+                    question,
+                    options: [
+                        { text: option1, votes: 0 },
+                        { text: option2, votes: 0 }
+                    ],
+                    voters: [],
+                    createdAt: new Date().toISOString(),
+                    createdBy: db.getPeerId()?.substring(0, 8) || 'local'
+                });
+
+                // Clear form
+                document.getElementById('poll-question').value = '';
+                document.getElementById('poll-option1').value = '';
+                document.getElementById('poll-option2').value = '';
+
+                logActivity(`🗳️ Created poll: ${question}`, 'success');
+                showNotification('Poll created successfully', 'success');
+                await updatePollsDisplay();
+
+            } catch (error) {
+                logActivity(`❌ Failed to create poll: ${error.message}`, 'error');
+            }
+        }
+
+        async function updatePollsDisplay() {
+            try {
+                const polls = await db.filter(item => item.type === 'poll');
+                const pollsContainer = document.getElementById('active-polls');
+                
+                pollsContainer.innerHTML = polls.map(poll => `
+                    <div class="data-item" style="margin-top: 15px;">
+                        <div class="data-item-header">
+                            <div class="data-item-title">${poll.question}</div>
+                        </div>
+                        <div class="data-item-content">
+                            ${poll.options.map((option, index) => `
+                                <div style="margin: 10px 0; display: flex; align-items: center; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="voteInPoll('${poll.id}', ${index})" style="padding: 5px 10px;">
+                                        ${option.text} (${option.votes})
+                                    </button>
+                                    <div class="chart-bar" style="flex: 1; max-width: 200px;">
+                                        <div class="chart-fill" style="width: ${(option.votes / Math.max(1, poll.options.reduce((sum, opt) => sum + opt.votes, 0))) * 100}%"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="data-item-meta">
+                            Created by ${poll.createdBy} at ${new Date(poll.createdAt).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to update polls:', error);
+            }
+        }
+
+        async function voteInPoll(pollId, optionIndex) {
+            try {
+                const poll = await db.get(pollId);
+                if (!poll) return;
+
+                const voterId = db.getPeerId()?.substring(0, 8) || 'anonymous';
+                
+                if (poll.voters.includes(voterId)) {
+                    showNotification('You have already voted in this poll', 'warning');
+                    return;
+                }
+
+                poll.options[optionIndex].votes++;
+                poll.voters.push(voterId);
+
+                await db.add(pollId, poll);
+                logActivity(`🗳️ Voted in poll: ${poll.question}`, 'info');
+                await updatePollsDisplay();
+
+            } catch (error) {
+                logActivity(`❌ Failed to vote: ${error.message}`, 'error');
+            }
+        }
+
+        // Data management functions
+        async function updateUI() {
+            if (!isConnected) return;
+
+            try {
+                // Update connection info
+                document.getElementById('connections-count').textContent = db.getConnectionCount();
+                document.getElementById('sync-count').textContent = stats.syncEvents;
+
+                // Get all data and update counts
+                const allData = await db.all();
+                const users = allData.filter(item => item.type === 'user');
+                const tasks = allData.filter(item => item.type === 'task');
+                const tags = allData.filter(item => item.type === 'tag');
+                const messages = allData.filter(item => item.type === 'message');
+
+                // Update main counters
+                document.getElementById('records-count').textContent = allData.length;
+                document.getElementById('users-count').textContent = users.length;
+                document.getElementById('tasks-count').textContent = tasks.length;
+                document.getElementById('tags-count').textContent = tags.length;
+                document.getElementById('messages-count').textContent = messages.length;
+
+                // Update analytics
+                document.getElementById('users-stat').textContent = users.length;
+                document.getElementById('tasks-stat').textContent = tasks.length;
+                document.getElementById('messages-stat').textContent = messages.length;
+                document.getElementById('sync-stat').textContent = stats.syncEvents;
+
+                // Update progress bars
+                const maxValue = 100;
+                document.getElementById('users-bar').style.width = `${Math.min(users.length / maxValue * 100, 100)}%`;
+                document.getElementById('tasks-bar').style.width = `${Math.min(tasks.length / maxValue * 100, 100)}%`;
+                document.getElementById('messages-bar').style.width = `${Math.min(messages.length / maxValue * 100, 100)}%`;
+                document.getElementById('sync-bar').style.width = `${Math.min(stats.syncEvents / 50 * 100, 100)}%`;
+
+                // Update data displays
+                await updateDataDisplays(users, tasks, tags, messages);
+
+            } catch (error) {
+                console.error('Failed to update UI:', error);
+            }
+        }
+
+        async function updateDataDisplays(users, tasks, tags, messages) {
+            // Update users display
+            const usersList = document.getElementById('users-list');
+            usersList.innerHTML = users.map(user => `
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <div class="data-item-title">👤 ${user.name}</div>
+                        <div class="data-item-meta">${user.role} • Age ${user.age}</div>
+                    </div>
+                    <div class="data-item-content">
+                        📧 ${user.email}
+                    </div>
+                    <div class="data-item-meta">
+                        Added by ${user.createdBy} at ${new Date(user.createdAt).toLocaleString()}
+                    </div>
+                    <div class="data-item-actions">
+                        <button class="btn btn-error" onclick="removeItem('${user.id}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update tasks display
+            const tasksList = document.getElementById('tasks-list');
+            const priorityEmojis = { low: '🟢', medium: '🟡', high: '🔴' };
+            tasksList.innerHTML = tasks.map(task => `
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <div class="data-item-title">📋 ${task.title}</div>
+                        <div class="data-item-meta">${priorityEmojis[task.priority]} ${task.priority} priority</div>
+                    </div>
+                    <div class="data-item-content">
+                        ${task.description}
+                    </div>
+                    <div class="data-item-meta">
+                        Created by ${task.createdBy} at ${new Date(task.createdAt).toLocaleString()}
+                    </div>
+                    <div class="data-item-actions">
+                        <button class="btn btn-success" onclick="toggleTaskStatus('${task.id}')">
+                            ${task.status === 'completed' ? '↩️ Reopen' : '✅ Complete'}
+                        </button>
+                        <button class="btn btn-error" onclick="removeItem('${task.id}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update tags display
+            const tagsList = document.getElementById('tags-list');
+            tagsList.innerHTML = tags.map(tag => `
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <div class="data-item-title">
+                            🏷️ <span style="color: ${tag.color}">${tag.name}</span>
+                        </div>
+                        <div class="data-item-meta">Used ${tag.usageCount} times</div>
+                    </div>
+                    <div class="data-item-content">
+                        ${tag.description || 'No description'}
+                    </div>
+                    <div class="data-item-meta">
+                        Created by ${tag.createdBy} at ${new Date(tag.createdAt).toLocaleString()}
+                    </div>
+                    <div class="data-item-actions">
+                        <button class="btn btn-error" onclick="removeItem('${tag.id}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update messages display
+            const messagesList = document.getElementById('messages-list');
+            messagesList.innerHTML = messages
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(message => `
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <div class="data-item-title">💬 ${message.author}</div>
+                        <div class="data-item-meta">${new Date(message.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div class="data-item-content">
+                        ${message.content}
+                    </div>
+                    <div class="data-item-actions">
+                        <button class="btn btn-error" onclick="removeItem('${message.id}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update chat display
+            await updateChatDisplay();
+            await updatePollsDisplay();
+        }
+
+        async function removeItem(itemId) {
+            try {
+                await db.remove(itemId);
+                logActivity(`🗑️ Removed item: ${itemId}`, 'warning');
+                showNotification('Item removed successfully', 'success');
+                await updateUI();
+            } catch (error) {
+                logActivity(`❌ Failed to remove item: ${error.message}`, 'error');
+            }
+        }
+
+        async function toggleTaskStatus(taskId) {
+            try {
+                const task = await db.get(taskId);
+                if (!task) return;
+
+                task.status = task.status === 'completed' ? 'pending' : 'completed';
+                task.updatedAt = new Date().toISOString();
+                
+                await db.add(taskId, task);
+                logActivity(`✅ Updated task status: ${task.title}`, 'info');
+                await updateUI();
+            } catch (error) {
+                logActivity(`❌ Failed to update task: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility functions
+        async function generateSampleData() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            try {
+                const sampleData = [
+                    // Users
+                    { type: 'user', name: 'Alice Johnson', email: 'alice@example.com', age: 28, role: 'Developer' },
+                    { type: 'user', name: 'Bob Smith', email: 'bob@example.com', age: 35, role: 'Designer' },
+                    { type: 'user', name: 'Carol Davis', email: 'carol@example.com', age: 31, role: 'Manager' },
+                    
+                    // Tasks
+                    { type: 'task', title: 'Review code changes', description: 'Review the new authentication system', priority: 'high', status: 'pending' },
+                    { type: 'task', title: 'Update documentation', description: 'Update API documentation with new endpoints', priority: 'medium', status: 'pending' },
+                    { type: 'task', title: 'Design mockups', description: 'Create mockups for the new dashboard', priority: 'low', status: 'completed' },
+                    
+                    // Tags
+                    { type: 'tag', name: 'Frontend', color: '#3b82f6', description: 'Frontend development related', usageCount: 5 },
+                    { type: 'tag', name: 'Backend', color: '#ef4444', description: 'Backend development related', usageCount: 8 },
+                    { type: 'tag', name: 'Design', color: '#8b5cf6', description: 'Design and UI/UX related', usageCount: 3 }
+                ];
+
+                const createdBy = db.getPeerId()?.substring(0, 8) || 'sample';
+                const timestamp = new Date().toISOString();
+
+                for (const item of sampleData) {
+                    const id = `${item.type}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                    await db.add(id, {
+                        ...item,
+                        createdAt: timestamp,
+                        createdBy
+                    });
+                }
+
+                logActivity('📊 Generated sample data successfully', 'success');
+                showNotification('Sample data generated', 'success');
+                await updateUI();
+
+            } catch (error) {
+                logActivity(`❌ Failed to generate sample data: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearAllData() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                await db.clear();
+                stats = { users: 0, tasks: 0, tags: 0, messages: 0, syncEvents: 0 };
+                logActivity('🧹 Cleared all data', 'warning');
+                showNotification('All data cleared', 'success');
+                await updateUI();
+            } catch (error) {
+                logActivity(`❌ Failed to clear data: ${error.message}`, 'error');
+            }
+        }
+
+        async function refreshData() {
+            logActivity('🔄 Refreshing data display', 'info');
+            await updateUI();
+            showNotification('Data refreshed', 'success');
+        }
+
+        async function manualSync() {
+            if (!isConnected || !db.isDistributed()) {
+                showNotification('Sync not available', 'warning');
+                return;
+            }
+
+            try {
+                await db.sync();
+                logActivity('🔄 Manual sync completed', 'success');
+                showNotification('Manual sync completed', 'success');
+            } catch (error) {
+                logActivity(`❌ Sync failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function exportDatabase() {
+            if (!isConnected) {
+                showNotification('Database not connected', 'error');
+                return;
+            }
+
+            try {
+                const data = await db.all();
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    peerId: db.getPeerId(),
+                    recordCount: data.length,
+                    data: data
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `auroradb-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                logActivity(`📦 Exported ${data.length} records`, 'success');
+                showNotification('Database exported successfully', 'success');
+
+            } catch (error) {
+                logActivity(`❌ Export failed: ${error.message}`, 'error');
+            }
+        }
+
+        function importDatabase() {
+            document.getElementById('import-file').click();
+        }
+
+        async function processImport() {
+            const fileInput = document.getElementById('import-file');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const importData = JSON.parse(text);
+                
+                if (!importData.data || !Array.isArray(importData.data)) {
+                    throw new Error('Invalid import file format');
+                }
+
+                let importedCount = 0;
+                for (const item of importData.data) {
+                    if (item.id) {
+                        await db.add(item.id, item);
+                        importedCount++;
+                    }
+                }
+
+                logActivity(`📥 Imported ${importedCount} records`, 'success');
+                showNotification(`Imported ${importedCount} records`, 'success');
+                await updateUI();
+
+            } catch (error) {
+                logActivity(`❌ Import failed: ${error.message}`, 'error');
+                showNotification('Import failed', 'error');
+            } finally {
+                fileInput.value = '';
+            }
+        }
+
+        function updateAdapterInfo() {
+            const adapter = document.getElementById('p2p-adapter').value;
+            const infoDiv = document.getElementById('adapter-info');
+            
+            const adapterInfo = {
+                peerjs: `// PeerJS Configuration
+const db = new AuroraDB({
+    name: 'myapp',
+    distributed: true,
+    p2pAdapter: 'peerjs',
+    server: {
+        host: 'localhost',
+        port: 9000
+    }
+});`,
+                webrtc: `// WebRTC Configuration  
+const db = new AuroraDB({
+    name: 'myapp',
+    distributed: true,
+    p2pAdapter: 'webrtc',
+    p2pConfig: {
+        signalingServer: 'wss://signaling.example.com'
+    }
+});`,
+                socketio: `// Socket.IO Configuration
+const db = new AuroraDB({
+    name: 'myapp',
+    distributed: true,
+    p2pAdapter: 'socketio',
+    p2pConfig: {
+        serverUrl: 'https://server.example.com'
+    }
+});`
+            };
+
+            infoDiv.innerHTML = `<pre>${adapterInfo[adapter] || 'Configuration example'}</pre>`;
+        }
+
+        function applySettings() {
+            const syncInterval = parseInt(document.getElementById('sync-interval').value);
+            const conflictResolution = document.getElementById('conflict-resolution').value;
+            
+            logActivity(`⚙️ Settings updated: Sync=${syncInterval}ms, Conflicts=${conflictResolution}`, 'info');
+            showNotification('Settings applied (restart required for full effect)', 'warning');
+        }
+
+        async function reconnectDatabase() {
+            logActivity('🔌 Reconnecting database...', 'info');
+            try {
+                await db.destroy();
+                await initApp();
+                showNotification('Database reconnected', 'success');
+            } catch (error) {
+                logActivity(`❌ Reconnection failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility functions
+        function logActivity(message, type = 'info') {
+            const log = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logItem = document.createElement('div');
+            logItem.className = `log-item ${type}`;
+            logItem.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
+            
+            log.insertBefore(logItem, log.firstChild);
+            
+            // Keep only last 50 log entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function clearActivityLog() {
+            document.getElementById('activity-log').innerHTML = '';
+            logActivity('🧹 Activity log cleared', 'info');
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', () => {
+            initApp();
+            updateAdapterInfo();
+            
+            // Set up periodic UI updates
+            setInterval(() => {
+                if (isConnected) {
+                    updateUI();
+                }
+            }, 5000);
+        });
+
+        // Add some sample functionality triggers
+        window.addEventListener('keydown', (event) => {
+            // Ctrl+G to generate sample data
+            if (event.ctrlKey && event.key === 'g') {
+                event.preventDefault();
+                generateSampleData();
+            }
+            
+            // Ctrl+R to refresh (prevent default and do our refresh)
+            if (event.ctrlKey && event.key === 'r') {
+                event.preventDefault();
+                refreshData();
+            }
+        });
+    </script>
+</body>
+</html>
