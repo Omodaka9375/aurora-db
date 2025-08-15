@@ -15,7 +15,9 @@ AuroraDB is a lightweight, high-performance database that combines the reliabili
 ```html
 <!-- Include PeerJS (default P2P adapter) -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<!-- Include AuroraDB -->
+<!-- Include AuroraDB from jsdeliver -->
+<script src="https://cdn.jsdelivr.net/npm/aurora-db@latest/auroradb.min.js"></script>
+<!-- Include local version for Development -->
 <script src="auroradb.js"></script>
 ```
 
