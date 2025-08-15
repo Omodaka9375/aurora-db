@@ -10,6 +10,8 @@ AuroraDB is a lightweight, high-performance database that combines the reliabili
 
 ## 🚀 Quick Start
 
+Demo page to run with PeerJS on localhost: [DEMO](https://omodaka9375.github.io/aurora-db/)
+
 ### Installation
 
 ```html
@@ -17,8 +19,6 @@ AuroraDB is a lightweight, high-performance database that combines the reliabili
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <!-- Include AuroraDB from jsdeliver -->
 <script src="https://cdn.jsdelivr.net/npm/aurora-db@latest/auroradb.min.js"></script>
-<!-- Include local version for Development -->
-<script src="auroradb.js"></script>
 ```
 
 ### Basic Usage
